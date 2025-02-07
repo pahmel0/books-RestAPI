@@ -5,6 +5,11 @@ import org.springframework.web.bind.annotation.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 
 @RestController
 @RequestMapping("/books")
@@ -50,15 +55,34 @@ public class BookController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    /**
-     * Adds a new book to the collection.
-     * 
-     * @param book the book to be added
-     * @return a ResponseEntity with a success message if the book is added successfully,
-     *         or an error message with the corresponding HTTP status code if there is an error
-     */
+    @Operation(
+        summary = "Add a new book to the collection",
+        description = "Creates a new book entry in the system. The book must have a unique ID and a non-empty title."
+    )
+    @ApiResponses(value = {
+        @ApiResponse(
+            responseCode = "201",
+            description = "Book successfully added",
+            content = @Content(
+                mediaType = "text/plain",
+                schema = @Schema(type = "string", example = "Book added")
+            )
+        ),
+        @ApiResponse(
+            responseCode = "400",
+            description = "Invalid input - either the book ID already exists or the title is empty/null",
+            content = @Content(
+                mediaType = "text/plain",
+                schema = @Schema(type = "string", example = "Error, book with that ID already exists")
+            )
+        )
+    })
     @PostMapping
-    public ResponseEntity<String> addBook(@RequestBody Book book) {
+    public ResponseEntity<String> addBook(
+        @io.swagger.v3.oas.annotations.parameters.RequestBody(
+            description = "Book object to be added to the collection. Must contain a unique ID and non-empty title"
+        )
+        @RequestBody Book book) {
         if (book.title() == null || book.title().isEmpty()) {
             return new ResponseEntity<>("Error, title can't be null or empty", HttpStatus.BAD_REQUEST);
         }
@@ -107,6 +131,7 @@ public class BookController {
      * @return a ResponseEntity with a success message if the book is deleted successfully,
      *         or an error message if the book is not found
      */
+    @Operation(hidden = true)
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteBook(@PathVariable int id) {
         Optional<Book> existingBook = books.stream().filter(b -> b.id() == id).findFirst();

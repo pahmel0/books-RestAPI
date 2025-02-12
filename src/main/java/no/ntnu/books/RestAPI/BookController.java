@@ -77,22 +77,23 @@ public class BookController {
             )
         )
     })
+
     @PostMapping
-    public ResponseEntity<String> addBook(
+    public ResponseEntity<Book> addBook(
         @io.swagger.v3.oas.annotations.parameters.RequestBody(
             description = "Book object to be added to the collection. Must contain a unique ID and non-empty title"
         )
         @RequestBody Book book) {
         if (book.title() == null || book.title().isEmpty()) {
-            return new ResponseEntity<>("Error, title can't be null or empty", HttpStatus.BAD_REQUEST);
+            return ResponseEntity.badRequest().build();
         }
 
         if (books.stream().anyMatch(b -> b.id() == book.id())) {
-            return new ResponseEntity<>("Error, book with that ID already exists", HttpStatus.BAD_REQUEST);
+            return ResponseEntity.badRequest().build();
         }
 
         books.add(book);
-        return new ResponseEntity<>("Book added", HttpStatus.CREATED);
+        return new ResponseEntity<>(book, HttpStatus.CREATED);
     }
 
     /**

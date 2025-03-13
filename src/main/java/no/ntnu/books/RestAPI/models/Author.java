@@ -1,4 +1,4 @@
-package no.ntnu.books.RestAPI;
+package no.ntnu.books.RestAPI.models;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;

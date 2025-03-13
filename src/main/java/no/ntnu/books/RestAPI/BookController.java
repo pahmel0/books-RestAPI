@@ -1,17 +1,18 @@
 package no.ntnu.books.RestAPI;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import no.ntnu.books.RestAPI.models.Book;
+import no.ntnu.books.RestAPI.repositories.BookRepository;
 
 @RestController
 @RequestMapping("/books")
@@ -23,26 +24,18 @@ public class BookController {
 
     private static final Logger logger = LoggerFactory.getLogger(BookController.class);
 
-    private List<Book> books;
-
-    public BookController() {
-        this.books = new ArrayList<>();
-        initializeData();
-    }
+    @Autowired
+    private BookRepository bookRepository;
 
     /**
-     * Initializes the data by adding books to the collection.
+     * Get all books from the database
+     * 
+     * @return All books from the database
      */
-    private void initializeData() {
-        books.add(new Book(1, "Book 1", 2000, 300));
-        books.add(new Book(2, "Book 2", 2005, 350));
-        books.add(new Book(3, "Book 3", 2010, 400));
-    }
-
     @GetMapping
-    public List<Book> getAllBooks() {
-        logger.info("Retrieving all books");
-        return books;
+    public Iterable<Book> getAll() {
+        logger.warn("Retrieving all books");
+        return bookRepository.findAll();
     }
 
     /**
@@ -52,12 +45,13 @@ public class BookController {
      * @return The ResponseEntity containing the book if found, or a not found response if the book does not exist.
      */
     @GetMapping("/{id}")
-    public ResponseEntity<Book> getBook(@PathVariable int id) {
-        return books.stream()
-                .filter(book -> book.getId() == id)
-                .findFirst()
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
+    public ResponseEntity<Book> getOne(@PathVariable int id) {
+        Optional<Book> book = bookRepository.findById(id);
+        if (book.isPresent()) {
+            return ResponseEntity.ok(book.get());
+        } else {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @Operation(
@@ -69,8 +63,8 @@ public class BookController {
             responseCode = "201",
             description = "Book successfully added",
             content = @Content(
-                mediaType = "text/plain",
-                schema = @Schema(type = "string", example = "Book added")
+                mediaType = "application/json",
+                schema = @Schema(implementation = Book.class)
             )
         ),
         @ApiResponse(
@@ -86,19 +80,15 @@ public class BookController {
     @PostMapping
     public ResponseEntity<Book> addBook(
         @io.swagger.v3.oas.annotations.parameters.RequestBody(
-            description = "Book object to be added to the collection. Must contain a unique ID and non-empty title"
+            description = "Book object to be added to the collection. Must contain a non-empty title"
         )
         @RequestBody Book book) {
         if (book.getTitle() == null || book.getTitle().isEmpty()) {
             return ResponseEntity.badRequest().build();
         }
 
-        if (books.stream().anyMatch(b -> b.getId() == book.getId())) {
-            return ResponseEntity.badRequest().build();
-        }
-
-        books.add(book);
-        return new ResponseEntity<>(book, HttpStatus.CREATED);
+        Book savedBook = bookRepository.save(book);
+        return new ResponseEntity<>(savedBook, HttpStatus.CREATED);
     }
 
     /**
@@ -110,9 +100,9 @@ public class BookController {
      */
     @PutMapping("/{id}")
     public ResponseEntity<String> updateBook(@PathVariable int id, @RequestBody Book book) {
-        Optional<Book> existingBook = books.stream().filter(b -> b.getId() == id).findFirst();
+        Optional<Book> existingBook = bookRepository.findById(id);
 
-        if (existingBook.isEmpty()) {
+        if (!existingBook.isPresent()) {
             return new ResponseEntity<>("Error, book not found", HttpStatus.NOT_FOUND);
         }
 
@@ -120,13 +110,9 @@ public class BookController {
             return new ResponseEntity<>("Error, title can't be null or empty", HttpStatus.BAD_REQUEST);
         }
 
-        if (books.stream().anyMatch(b -> b.getId() != id && b.getTitle().equals(book.getTitle()) && b.getYear() == book.getYear())) {
-            return new ResponseEntity<>("Error, another book with the same title and year exists",
-                    HttpStatus.BAD_REQUEST);
-        }
-
-        books.remove(existingBook.get());
-        books.add(book);
+        // Set the ID to ensure we're updating the correct book
+        book.setId(id);
+        bookRepository.save(book);
         return new ResponseEntity<>("Book updated", HttpStatus.OK);
     }
 
@@ -140,13 +126,13 @@ public class BookController {
     @Operation(hidden = true)
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteBook(@PathVariable int id) {
-        Optional<Book> existingBook = books.stream().filter(b -> b.getId() == id).findFirst();
+        Optional<Book> existingBook = bookRepository.findById(id);
 
-        if (existingBook.isEmpty()) {
+        if (!existingBook.isPresent()) {
             return new ResponseEntity<>("Error, book not found", HttpStatus.NOT_FOUND);
         }
 
-        books.remove(existingBook.get());
+        bookRepository.delete(existingBook.get());
         return new ResponseEntity<>("Book deleted", HttpStatus.OK);
     }
 }

@@ -1,4 +1,5 @@
 package no.ntnu.books.RestAPI;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,8 +18,7 @@ import no.ntnu.books.RestAPI.repositories.BookRepository;
 @RestController
 @RequestMapping("/books")
 /**
- * Controller for book REST API.
- * Provides endpoints for CRUD operations on books.
+ * Controller for book REST API. Provides endpoints for CRUD operations on books.
  */
 public class BookController {
 
@@ -42,7 +42,8 @@ public class BookController {
      * Retrieves a book with the specified ID.
      *
      * @param id The ID of the book to retrieve.
-     * @return The ResponseEntity containing the book if found, or a not found response if the book does not exist.
+     * @return The ResponseEntity containing the book if found, or a not found response if the book
+     *         does not exist.
      */
     @GetMapping("/{id}")
     public ResponseEntity<Book> getOne(@PathVariable int id) {
@@ -54,35 +55,21 @@ public class BookController {
         }
     }
 
-    @Operation(
-        summary = "Add a new book to the collection",
-        description = "Creates a new book entry in the system. The book must have a unique ID and a non-empty title."
-    )
+    @Operation(summary = "Add a new book to the collection",
+            description = "Creates a new book entry in the system. The book must have a unique ID and a non-empty title.")
     @ApiResponses(value = {
-        @ApiResponse(
-            responseCode = "201",
-            description = "Book successfully added",
-            content = @Content(
-                mediaType = "application/json",
-                schema = @Schema(implementation = Book.class)
-            )
-        ),
-        @ApiResponse(
-            responseCode = "400",
-            description = "Invalid input - either the book ID already exists or the title is empty/null",
-            content = @Content(
-                mediaType = "text/plain",
-                schema = @Schema(type = "string", example = "Error, book with that ID already exists")
-            )
-        )
-    })
+            @ApiResponse(responseCode = "201", description = "Book successfully added",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = Book.class))),
+            @ApiResponse(responseCode = "400",
+                    description = "Invalid input - either the book ID already exists or the title is empty/null",
+                    content = @Content(mediaType = "text/plain",
+                            schema = @Schema(type = "string",
+                                    example = "Error, book with that ID already exists")))})
 
     @PostMapping
-    public ResponseEntity<Book> addBook(
-        @io.swagger.v3.oas.annotations.parameters.RequestBody(
-            description = "Book object to be added to the collection. Must contain a non-empty title"
-        )
-        @RequestBody Book book) {
+    public ResponseEntity<Book> addBook(@io.swagger.v3.oas.annotations.parameters.RequestBody(
+            description = "Book object to be added to the collection. Must contain a non-empty title") @RequestBody Book book) {
         if (book.getTitle() == null || book.getTitle().isEmpty()) {
             return ResponseEntity.badRequest().build();
         }
@@ -94,7 +81,7 @@ public class BookController {
     /**
      * Updates a book with the given ID.
      *
-     * @param id   The ID of the book to update.
+     * @param id The ID of the book to update.
      * @param book The updated book object.
      * @return A ResponseEntity containing a message indicating the result of the update operation.
      */
@@ -107,7 +94,8 @@ public class BookController {
         }
 
         if (book.getTitle() == null || book.getTitle().isEmpty()) {
-            return new ResponseEntity<>("Error, title can't be null or empty", HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>("Error, title can't be null or empty",
+                    HttpStatus.BAD_REQUEST);
         }
 
         // Set the ID to ensure we're updating the correct book
@@ -120,8 +108,8 @@ public class BookController {
      * Deletes a book with the specified ID.
      *
      * @param id the ID of the book to be deleted
-     * @return a ResponseEntity with a success message if the book is deleted successfully,
-     *         or an error message if the book is not found
+     * @return a ResponseEntity with a success message if the book is deleted successfully, or an
+     *         error message if the book is not found
      */
     @Operation(hidden = true)
     @DeleteMapping("/{id}")

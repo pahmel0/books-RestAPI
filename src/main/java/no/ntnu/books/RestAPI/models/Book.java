@@ -6,6 +6,10 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.ManyToMany;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.FetchType;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -14,7 +18,7 @@ import java.util.Set;
  * 
  * This class includes: - id: A unique identifier for the book. - title: The title of the book. -
  * year: The year the book was published. - numberOfPages: The total number of pages in the book. -
- * authors: The set of authors who wrote the book.
+ * authors: The set of authors who wrote the book. - tags: The set of tags associated with the book.
  * 
  * Each field is annotated with @Schema to provide metadata for API documentation.
  */
@@ -38,6 +42,12 @@ public class Book {
     @ManyToMany(mappedBy = "books")
     @Schema(description = "Authors of the book")
     private final Set<Author> authors = new HashSet<>();
+
+    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.LAZY)
+    @JoinTable(name = "book_tag", joinColumns = @JoinColumn(name = "book_id"),
+            inverseJoinColumns = @JoinColumn(name = "tag_id"))
+    @Schema(description = "Tags associated with the book")
+    private final Set<Tag> tags = new HashSet<>();
 
     /**
      * Default constructor required by JPA
@@ -87,6 +97,16 @@ public class Book {
     }
 
     /**
+     * Get the set of tags for this book. Note: Returns an unmodifiable view of the tags set to
+     * maintain encapsulation.
+     * 
+     * @return The set of tags
+     */
+    public Set<Tag> getTags() {
+        return Set.copyOf(tags);
+    }
+
+    /**
      * Add an author to this book and establish the bidirectional relationship.
      * 
      * @param author The author to add
@@ -124,6 +144,67 @@ public class Book {
         return authors.contains(author);
     }
 
+    /**
+     * Add a tag to this book and establish the bidirectional relationship.
+     * 
+     * @param tag The tag to add
+     * @return true if the tag was added, false if the tag was already in the set
+     */
+    public boolean addTag(Tag tag) {
+        boolean added = tags.add(tag);
+        if (added) {
+            tag.addBook(this);
+        }
+        return added;
+    }
+
+    /**
+     * Add a tag to this book by name. If the tag doesn't exist, it will be created.
+     * 
+     * @param tagName The name of the tag to add
+     * @return The tag that was added or found
+     */
+    public Tag addTag(String tagName) {
+        Tag tag = new Tag(tagName);
+        tags.add(tag);
+        tag.addBook(this);
+        return tag;
+    }
+
+    /**
+     * Remove a tag from this book and remove the bidirectional relationship.
+     * 
+     * @param tag The tag to remove
+     * @return true if the tag was removed, false if the tag was not in the set
+     */
+    public boolean removeTag(Tag tag) {
+        boolean removed = tags.remove(tag);
+        if (removed) {
+            tag.removeBook(this);
+        }
+        return removed;
+    }
+
+    /**
+     * Check if this book has a specific tag.
+     * 
+     * @param tag The tag to check
+     * @return true if the book has the tag, false otherwise
+     */
+    public boolean hasTag(Tag tag) {
+        return tags.contains(tag);
+    }
+
+    /**
+     * Check if this book has a tag with the specified name.
+     * 
+     * @param tagName The name of the tag to check
+     * @return true if the book has a tag with the specified name, false otherwise
+     */
+    public boolean hasTag(String tagName) {
+        return tags.stream().anyMatch(tag -> tag.getName().equals(tagName));
+    }
+
     // Setters
     public void setId(int id) {
         this.id = id;
@@ -150,7 +231,7 @@ public class Book {
         Book book = (Book) o;
         return id == book.id && year == book.year && numberOfPages == book.numberOfPages
                 && (title == null ? book.title == null : title.equals(book.title));
-        // Note: We don't include authors in equals to avoid infinite recursion
+        // Note: We don't include authors and tags in equals to avoid infinite recursion
     }
 
     @Override
@@ -159,19 +240,14 @@ public class Book {
         result = 31 * result + (title != null ? title.hashCode() : 0);
         result = 31 * result + year;
         result = 31 * result + numberOfPages;
-        // Note: We don't include authors in hashCode to avoid infinite recursion
+        // Note: We don't include authors and tags in hashCode to avoid infinite recursion
         return result;
     }
 
     @Override
     public String toString() {
         return "Book{" + "id=" + id + ", title='" + title + '\'' + ", year=" + year
-                + ", numberOfPages=" + numberOfPages + ", authors=" + authors.size() + // Only
-                                                                                       // include
-                                                                                       // the count
-                                                                                       // to avoid
-                                                                                       // infinite
-                                                                                       // recursion
-                '}';
+                + ", numberOfPages=" + numberOfPages + ", authors=" + authors.size() + ", tags="
+                + tags.size() + '}';
     }
 }

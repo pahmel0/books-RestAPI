@@ -5,14 +5,12 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.ManyToOne;
 
 /**
  * Represents a book with specific attributes.
  * 
  * This class includes: - id: A unique identifier for the book. - title: The title of the book. -
- * year: The year the book was published. - numberOfPages: The total number of pages in the book. -
- * author: The author of the book.
+ * year: The year the book was published. - numberOfPages: The total number of pages in the book.
  * 
  * Each field is annotated with @Schema to provide metadata for API documentation.
  */
@@ -33,32 +31,24 @@ public class Book {
     @Schema(description = "Total number of pages in the book", example = "180")
     private int numberOfPages;
 
-    @ManyToOne
-    @Schema(description = "Author of the book")
-    private Author author;
-
     /**
      * Default constructor required by JPA
      */
     public Book() {}
 
-
-
     /**
-     * Constructor with all fields including author
+     * Constructor with all fields
      * 
      * @param id Unique identifier for the book
      * @param title Title of the book
      * @param year Year the book was published
      * @param numberOfPages Total number of pages in the book
-     * @param author Author of the book
      */
-    public Book(int id, String title, int year, int numberOfPages, Author author) {
+    public Book(int id, String title, int year, int numberOfPages) {
         this.id = id;
         this.title = title;
         this.year = year;
         this.numberOfPages = numberOfPages;
-        this.author = author;
     }
 
     // Getters
@@ -78,10 +68,6 @@ public class Book {
         return numberOfPages;
     }
 
-    public Author getAuthor() {
-        return author;
-    }
-
     // Setters
     public void setId(int id) {
         this.id = id;
@@ -99,10 +85,6 @@ public class Book {
         this.numberOfPages = numberOfPages;
     }
 
-    public void setAuthor(Author author) {
-        this.author = author;
-    }
-
     @Override
     public boolean equals(Object o) {
         if (this == o)
@@ -111,8 +93,7 @@ public class Book {
             return false;
         Book book = (Book) o;
         return id == book.id && year == book.year && numberOfPages == book.numberOfPages
-                && (title == null ? book.title == null : title.equals(book.title))
-                && (author == null ? book.author == null : author.equals(book.author));
+                && (title == null ? book.title == null : title.equals(book.title));
     }
 
     @Override
@@ -121,14 +102,12 @@ public class Book {
         result = 31 * result + (title != null ? title.hashCode() : 0);
         result = 31 * result + year;
         result = 31 * result + numberOfPages;
-        result = 31 * result + (author != null ? author.hashCode() : 0);
         return result;
     }
 
     @Override
     public String toString() {
         return "Book{" + "id=" + id + ", title='" + title + '\'' + ", year=" + year
-                + ", numberOfPages=" + numberOfPages + ", author="
-                + (author != null ? author.getId() : "null") + '}';
+                + ", numberOfPages=" + numberOfPages + '}';
     }
 }

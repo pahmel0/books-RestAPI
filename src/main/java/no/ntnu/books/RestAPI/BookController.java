@@ -54,7 +54,7 @@ public class BookController {
     @GetMapping("/{id}")
     public ResponseEntity<Book> getBook(@PathVariable int id) {
         return books.stream()
-                .filter(book -> book.id() == id)
+                .filter(book -> book.getId() == id)
                 .findFirst()
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
@@ -89,11 +89,11 @@ public class BookController {
             description = "Book object to be added to the collection. Must contain a unique ID and non-empty title"
         )
         @RequestBody Book book) {
-        if (book.title() == null || book.title().isEmpty()) {
+        if (book.getTitle() == null || book.getTitle().isEmpty()) {
             return ResponseEntity.badRequest().build();
         }
 
-        if (books.stream().anyMatch(b -> b.id() == book.id())) {
+        if (books.stream().anyMatch(b -> b.getId() == book.getId())) {
             return ResponseEntity.badRequest().build();
         }
 
@@ -110,17 +110,17 @@ public class BookController {
      */
     @PutMapping("/{id}")
     public ResponseEntity<String> updateBook(@PathVariable int id, @RequestBody Book book) {
-        Optional<Book> existingBook = books.stream().filter(b -> b.id() == id).findFirst();
+        Optional<Book> existingBook = books.stream().filter(b -> b.getId() == id).findFirst();
 
         if (existingBook.isEmpty()) {
             return new ResponseEntity<>("Error, book not found", HttpStatus.NOT_FOUND);
         }
 
-        if (book.title() == null || book.title().isEmpty()) {
+        if (book.getTitle() == null || book.getTitle().isEmpty()) {
             return new ResponseEntity<>("Error, title can't be null or empty", HttpStatus.BAD_REQUEST);
         }
 
-        if (books.stream().anyMatch(b -> b.id() != id && b.title().equals(book.title()) && b.year() == book.year())) {
+        if (books.stream().anyMatch(b -> b.getId() != id && b.getTitle().equals(book.getTitle()) && b.getYear() == book.getYear())) {
             return new ResponseEntity<>("Error, another book with the same title and year exists",
                     HttpStatus.BAD_REQUEST);
         }
@@ -140,7 +140,7 @@ public class BookController {
     @Operation(hidden = true)
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteBook(@PathVariable int id) {
-        Optional<Book> existingBook = books.stream().filter(b -> b.id() == id).findFirst();
+        Optional<Book> existingBook = books.stream().filter(b -> b.getId() == id).findFirst();
 
         if (existingBook.isEmpty()) {
             return new ResponseEntity<>("Error, book not found", HttpStatus.NOT_FOUND);

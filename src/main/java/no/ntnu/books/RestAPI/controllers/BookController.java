@@ -1,4 +1,4 @@
-package no.ntnu.books.RestAPI;
+package no.ntnu.books.RestAPI.controllers;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

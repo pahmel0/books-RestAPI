@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" th:fragment="layout(title, content)">
+
+<head th:replace="~{components/head :: head(${title})}">
+</head>
+
+<body>
+    <nav th:replace="~{components/navigation :: navigation}"></nav>
+    <div class="main-container">
+        <main th:replace="${content}">
+        </main>
+    </div>
+</body>
+
+</html>

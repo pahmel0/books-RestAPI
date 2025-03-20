@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
 
 <head>
   <meta charset="UTF-8" />
@@ -9,17 +9,11 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Noto+Serif:wght@400;700&display=swap" rel="stylesheet" />
   <!-- Our own styles -->
-  <link rel="stylesheet" href="../static/styles.css" />
+  <link rel="stylesheet" th:href="@{/styles.css}" />
 </head>
 
 <body>
-  <nav>
-    <ul>
-      <li><a href="index.html">Home</a></li>
-      <li><a href="books.html">Books</a></li>
-      <li><a href="about.html">About us</a></li>
-    </ul>
-  </nav>
+  <nav th:replace="~{components/navigation :: navigation}"></nav>
   <div class="main-container">
     <main>
       <h1>Our books</h1>

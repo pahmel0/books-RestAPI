@@ -16,7 +16,7 @@ import no.ntnu.books.RestAPI.models.Book;
 import no.ntnu.books.RestAPI.repositories.BookRepository;
 
 @RestController
-@RequestMapping("/books")
+@RequestMapping("/bookss")
 /**
  * Controller for book REST API. Provides endpoints for CRUD operations on books.
  */

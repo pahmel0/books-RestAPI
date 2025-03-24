@@ -1,0 +1,8 @@
+<div class="book-container">
+  <div class="card" th:each="book: ${books}">
+    <div class="book-image-container">
+      <img th:src="@{/img/{id}.jpg(id=${book.id})}" th:alt="|Book cover for ${book.title}|" />
+    </div>
+    <p th:text="${book.title}"></p>
+  </div>
+</div>
